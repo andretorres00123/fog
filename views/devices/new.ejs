@@ -1,0 +1,31 @@
+<% include ../partials/header %>
+	<div class="container">
+		<div class="row">
+			<h1 style="text-align: center;">Agregar un Nuevo Dispositivo</h1>
+
+			<div style="width: 30%; margin: 25px auto;">
+				<form action="/devices" method="POST">
+					<div class="form-group">
+						<input class="form-control" type="text" name="name" placeholder="Nombre">
+					</div>
+					<div class="form-group">
+						<input class="form-control" type="text" name="ip" placeholder="IP Address">
+					</div>
+					<div class="form-group">
+						<input class="form-control" type="text" name="image" placeholder="Url de la imagen del Dispositivo">
+					</div>
+					<div class="form-group">
+						<input class="form-control" type="text" name="latitud" placeholder="Latitud">
+					</div>
+					<div class="form-group">
+						<input class="form-control" type="text" name="longitud" placeholder="Longitud">
+					</div>
+					<div class="form-group">
+						<button class="btn btn-lg btn-primary btn-block"><i class="far fa-save"></i> Guardar!</button>
+					</div>
+				</form>
+			</div>
+		</div>	
+	</div>
+
+<% include ../partials/footer %>
