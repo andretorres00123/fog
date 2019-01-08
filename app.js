@@ -3,7 +3,7 @@ var express		= require("express"),
 	app			= express(),
 	ping 		= require("net-ping");
 
-const port	   = 3000;
+const port	   = 3502;
 var session = ping.createSession();
 var mensaje = 0;
 
@@ -14,7 +14,8 @@ app.use(express.static(__dirname + "/public"));
 
 
 function doingPing() {
-	session.pingHost("192.168.0.102", function(error, target){
+	//Se colo la direccion IP a la que se quiere hacer ping 
+	session.pingHost("192.168.0.103", function(error, target){
 		if (error){
 			if(error instanceof ping.RequestTimedOutError)
 				console.log(target + ": Not alive");
