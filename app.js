@@ -22,16 +22,29 @@ function doingPing(ipAddress) {
   //Se colo la direccion IP a la que se quiere hacer ping
   session.pingHost(ipAddress, function(error, target) {
     if (error) {
-      if (error instanceof ping.RequestTimedOutError)
+      if (error instanceof ping.RequestTimedOutError) {
         console.log(target + ': Not alive');
-      else console.log(target + ': ' + error.toString());
+        Device.findById(target, function(err, foundDevice){
+          if(foundDevice.status){
+            foundDevice.status = false;
+            Device.findByIdAndUpdate(target, foundDevice, function(err, updatedDevice){
+              if(err){
+                console.log('Error', err);
+              } else {
+                console.log(`El dispositivo ${target} se ha desconectado`);
+              }
+            });
+          }
+          
+          
+        });
+       
+      } else console.log(target + ': ' + error.toString());
     } else {
-      mensaje++;
+      console.log(mensaje++);
     }
   });
-}
-
-setInterval(doingPing, 3000, '192.168.0.103');
+};
 
 //INdex de toda la aplicacion
 app.get('/', function(req, res) {
@@ -48,6 +61,7 @@ app.get('/devices', function(req, res) {
     }
   });
 });
+
 //Ruta para crear y guardar los dispositivos en la DB
 app.post('/devices', function(req, res) {
   var newDevice = {
@@ -65,6 +79,7 @@ app.post('/devices', function(req, res) {
       console.log(err);
     } else {
       console.log(newlyCreated);
+      setInterval(doingPing, 3000, newlyCreated.ipAddress);
       res.redirect('/devices');
     }
   });
@@ -75,29 +90,12 @@ app.get('/devices/new', function(req, res) {
   res.render('devices/new');
 });
 
-// var all = Device.find(function(err, allDevices) {
-//   if (err) {
-//     return err;
-//   }
-//   return allDevices;
-// });
-
-// all.map(function(device) {
-// 	console.log(device);
-// });
-//API para acceder al status de todos los dispositivos
-// app.get('/status', function(req, res) {
-//   res.json({
-//     status: all
-//   });
-// });
-
-Device.remove({}, function(err){
-	if(err){
-		console.log('ERROR en la DB');
-	} else {
-		console.log('BASE DE DATOS BORRADA');
-	}
+Device.remove({}, function(err) {
+  if (err) {
+    console.log('ERROR en la DB');
+  } else {
+    console.log('BASE DE DATOS BORRADA');
+  }
 });
 
 app.get('/status', function(req, res) {
