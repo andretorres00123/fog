@@ -7,7 +7,7 @@ function doingPing() {
 		url: '/status',
 		success: function(data) {
 			data.map((device) => {
-				$(`#${device.name}`).attr('btn-danger', 'btn-success');
+				$(`#${device.name}`).toggleClass('btn-danger', !device.status);
 			});
 		}
 	});
