@@ -12,6 +12,8 @@
     "body-parser": "^1.18.3",
     "ejs": "^2.6.1",
     "express": "^4.16.4",
-    "net-ping": "^1.2.3"
+    "mongoose": "^5.4.3",
+    "net-ping": "^1.2.3",
+    "nodemon": "^1.18.9"
   }
 }
