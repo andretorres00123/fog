@@ -8,7 +8,7 @@ var express = require('express'),
 
 const port = 3502;
 var session = ping.createSession();
-var mensaje = 0;
+var bandera = true;
 
 mongoose.connect(
   'mongodb://localhost/net_app_v1',
@@ -22,24 +22,36 @@ function doingPing(ipAddress, id) {
   //Se colo la direccion IP a la que se quiere hacer ping
   session.pingHost(ipAddress, function(error, target) {
     if (error) {
-      if (error instanceof ping.RequestTimedOutError) {
         console.log(target + ': Not alive');
         Device.findById(id, function(err, foundDevice){
           if(foundDevice.status){
-            foundDevice.status = false;
-            Device.findByIdAndUpdate(id, foundDevice, function(err, updatedDevice){
+            var name = foundDevice.name;
+            var ip = foundDevice.ipAddress;
+            var latitud = foundDevice.latitud;
+            var longitud = foundDevice.longitud;
+            var status = false;
+            var nuevo = {
+              device: {
+                name: name,
+                ipAddress: ip,
+                latitud: latitud,
+                longitud: longitud,
+              },
+              status: status
+            };
+            Device.findByIdAndUpdate(id, nuevo, function(err, updatedDevice){
               if(err){
                 console.log('Error', err);
               } else {
                 var newLog = {
                   device: {
-                    id: foundDevice.id,
+                    id: updatedDevice.id,
                     name: updatedDevice.name,
                     ipAddress: updatedDevice.ipAddress,
                     image: updatedDevice.image,
                     latitud: updatedDevice.latitud,
                     longitud: updatedDevice.longitud,
-                    status: updatedDevice.status
+                    status: false
                   },
                   updated: new Date(),
                 };
@@ -56,22 +68,39 @@ function doingPing(ipAddress, id) {
             });
           }   
         });
-      } else console.log(target + ': ' + error.toString());
     } else {
       // console.log(mensaje++);
       Device.findById(id, function(err, foundDevice){
         if (!foundDevice.status){
-          foundDevice.status = true;
-          Device.findByIdAndUpdate(id, foundDevice, function(err, updatedDevice){
+          var name = foundDevice.name;
+            var ip = foundDevice.ipAddress;
+            var latitud = foundDevice.latitud;
+            var longitud = foundDevice.longitud;
+            var status = true;
+            var nuevo = {
+              device: {
+                name: name,
+                ipAddress: ip,
+                latitud: latitud,
+                longitud: longitud,
+              },
+              status: status
+            };
+          Device.findByIdAndUpdate(id, nuevo, function(err, updatedDevice){
             if(err){
               console.log('Error', err);
             } else {
               var newLog = {
-                name: updatedDevice.name,
-                ipAddress: updatedDevice.ipAddress,
-                latitud: updatedDevice.latitud,
-                longitud: updatedDevice.longitud,
-                status: updatedDevice.status
+                device: {
+                  id: updatedDevice.id,
+                  name: updatedDevice.name,
+                  ipAddress: updatedDevice.ipAddress,
+                  image: updatedDevice.image,
+                  latitud: updatedDevice.latitud,
+                  longitud: updatedDevice.longitud,
+                  status: true
+                },
+                updated: new Date(),
               };
               Log.create(newLog, function(err, newlyLog) {
                 if(err){
@@ -94,16 +123,48 @@ function doingPing(ipAddress, id) {
 
 //INdex de toda la aplicacion
 app.get('/', function(req, res) {
-  res.render('devices/index');
+  Device.find({}, function(err, allDevices) {
+    if(bandera) {
+      allDevices.forEach(function(device) {
+        setInterval(doingPing, 3000, device.ipAddress ,device.id);
+      });
+      bandera = false;
+    }
+    allDevices.forEach(function(device) {
+      setInterval(doingPing, 3000, device.ipAddress ,device.id);
+    });
+    if (err) {
+      console.log(err);
+    } else {
+      res.render('devices/index', { devices: allDevices });
+    }
+  });
 });
 
 //SHOW- Muestra todos los dispositivos
 app.get('/devices', function(req, res) {
   Device.find({}, function(err, allDevices) {
+    if(bandera) {
+      allDevices.forEach(function(device) {
+        setInterval(doingPing, 3000, device.ipAddress ,device.id);
+      });
+      bandera = false;
+    }
     if (err) {
       console.log(err);
     } else {
       res.render('devices/index', { devices: allDevices });
+    }
+  });
+});
+
+//Muestra los LOGs de los dispositivos
+app.get('/devices/logs', function(req, res) {
+  Log.find({}, function(err, allLogs){
+    if (err) {
+      console.log(err);
+    } else {
+      res.render('devices/logs', { logs: allLogs });
     }
   });
 });
@@ -150,6 +211,14 @@ Log.remove({}, function(err) {
     console.log();
   }
 });
+
+// Log.find({}, function(err, all) {
+//   if (err) {
+//     console.log('ERROR en la DB');
+//   } else {
+//     console.log(all);
+//   }
+// });
 
 app.get('/status', function(req, res) {
   Device.find({}, (err, devices) => {

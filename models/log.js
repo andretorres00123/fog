@@ -1,7 +1,7 @@
 var mongoose = require('mongoose');
 
 var logSchema = new mongoose.Schema({
-  updated: { type: Date, default: Date.now },
+  updated: { type: Date, default: new Date() },
   device: {
     id: {
       type: mongoose.Schema.Types.ObjectId,

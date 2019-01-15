@@ -6,7 +6,7 @@ var deviceSchema = new mongoose.Schema({
     image: String,
     latitud: String,
     longitud: String,
-    status: Boolean,
+    status: {type: Boolean, default: false},
     logs: [
         {
             type: mongoose.Schema.Types.ObjectId,
