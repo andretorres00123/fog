@@ -9,7 +9,6 @@ var logSchema = new mongoose.Schema({
     },
     name: String,
     ipAddress: String,
-    image: String,
     latitud: String,
     longitud: String,
     status: Boolean

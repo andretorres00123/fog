@@ -18,30 +18,76 @@ app.use(bodyParser.urlencoded({ extended: true }));
 app.set('view engine', 'ejs');
 app.use(express.static(__dirname + '/public'));
 
-function doingPing(ipAddress) {
+function doingPing(ipAddress, id) {
   //Se colo la direccion IP a la que se quiere hacer ping
   session.pingHost(ipAddress, function(error, target) {
     if (error) {
       if (error instanceof ping.RequestTimedOutError) {
         console.log(target + ': Not alive');
-        Device.findById(target, function(err, foundDevice){
+        Device.findById(id, function(err, foundDevice){
           if(foundDevice.status){
             foundDevice.status = false;
-            Device.findByIdAndUpdate(target, foundDevice, function(err, updatedDevice){
+            Device.findByIdAndUpdate(id, foundDevice, function(err, updatedDevice){
               if(err){
                 console.log('Error', err);
               } else {
-                console.log(`El dispositivo ${target} se ha desconectado`);
+                var newLog = {
+                  device: {
+                    id: foundDevice.id,
+                    name: updatedDevice.name,
+                    ipAddress: updatedDevice.ipAddress,
+                    image: updatedDevice.image,
+                    latitud: updatedDevice.latitud,
+                    longitud: updatedDevice.longitud,
+                    status: updatedDevice.status
+                  },
+                  updated: new Date(),
+                };
+                Log.create(newLog, function(err, newlyLog) {
+                  if(err){
+                    console.log(err);
+                  } else {
+                      //  redirect back to campgrounds page
+                      console.log(newlyLog);
+                      console.log(`El dispositivo ${target} se ha desconectado`);
+                  }
+                });
               }
             });
-          }
-          
-          
+          }   
         });
-       
       } else console.log(target + ': ' + error.toString());
     } else {
-      console.log(mensaje++);
+      // console.log(mensaje++);
+      Device.findById(id, function(err, foundDevice){
+        if (!foundDevice.status){
+          foundDevice.status = true;
+          Device.findByIdAndUpdate(id, foundDevice, function(err, updatedDevice){
+            if(err){
+              console.log('Error', err);
+            } else {
+              var newLog = {
+                name: updatedDevice.name,
+                ipAddress: updatedDevice.ipAddress,
+                latitud: updatedDevice.latitud,
+                longitud: updatedDevice.longitud,
+                status: updatedDevice.status
+              };
+              Log.create(newLog, function(err, newlyLog) {
+                if(err){
+                  console.log(err);
+                } else {
+                    //  redirect back to campgrounds page
+                    console.log(newlyLog);
+                    console.log(`El dispositivo ${target} se ha conectado`);
+                }
+              });
+            }
+          });
+        } else {
+          console.log(`Ping ${target}`);
+        }
+      });
     }
   });
 };
@@ -79,7 +125,7 @@ app.post('/devices', function(req, res) {
       console.log(err);
     } else {
       console.log(newlyCreated);
-      setInterval(doingPing, 3000, newlyCreated.ipAddress);
+      setInterval(doingPing, 3000, newlyCreated.ipAddress ,newlyCreated.id);
       res.redirect('/devices');
     }
   });
@@ -94,7 +140,14 @@ Device.remove({}, function(err) {
   if (err) {
     console.log('ERROR en la DB');
   } else {
-    console.log('BASE DE DATOS BORRADA');
+    console.log();
+  }
+});
+Log.remove({}, function(err) {
+  if (err) {
+    console.log('ERROR en la DB');
+  } else {
+    console.log();
   }
 });
 
