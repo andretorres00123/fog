@@ -208,20 +208,20 @@ app.get('/devices/new', function(req, res) {
   res.render('devices/new');
 });
 
-Device.remove({}, function(err) {
-  if (err) {
-    console.log('ERROR en la DB');
-  } else {
-    console.log();
-  }
-});
-Log.remove({}, function(err) {
-  if (err) {
-    console.log('ERROR en la DB');
-  } else {
-    console.log();
-  }
-});
+// Device.remove({}, function(err) {
+//   if (err) {
+//     console.log('ERROR en la DB');
+//   } else {
+//     console.log();
+//   }
+// });
+// Log.remove({}, function(err) {
+//   if (err) {
+//     console.log('ERROR en la DB');
+//   } else {
+//     console.log();
+//   }
+// });
 
 // Log.find({}, function(err, all) {
 //   if (err) {

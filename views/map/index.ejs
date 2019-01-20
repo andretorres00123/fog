@@ -1,19 +1,54 @@
-<% include ../partials/header %>
+<!DOCTYPE html>
+<html lang="en" >
+    <head>
+        <meta charset="UTF-8">
+        <title>GeoServer</title>
+        <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/css/bootstrap.min.css" integrity="sha384-GJzZqFGwb1QTTN6wy59ffF1BuGJpLSa9DkKMp0DgiMDm4iYMj70gZWKYbI706tWS" crossorigin="anonymous">
+	    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.5.0/css/all.css">
+	    <script src='https://cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js'></script>
+        <link href="https://fonts.googleapis.com/css?family=Questrial" rel="stylesheet">
+        <link rel="stylesheet" href="/css/style.css">
+    </head>
+    <body>
 
-    <h1 align="center">Server Alert</h1>
+        <nav class="navbar navbar-expand-lg navbar-light bg-light">
+            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarTogglerDemo03" aria-controls="navbarTogglerDemo03" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <a class="navbar-brand" href="/devices/"><i class="fas fa-network-wired"></i> NetMonitor App</a>
 
-    <div class="container">
-        <div class="acf-map">
-            <% devices.forEach(function(device) { %>
-                <div class="marker" data-lat="<%= device.latitud %>" data-lng="<%= device.longitud %>">
-                    <h4><%= device.name %></h4>
-                    <p><%= device.status %></p>
-                </div>   
-            <% }); %>
+            <div class="collapse navbar-collapse" id="navbarTogglerDemo03">
+                <ul class="navbar-nav mr-auto mt-2 mt-lg-0">
+                <li class="nav-item active">
+                    <a class="nav-link" href="/devices/">Inicio <span class="sr-only">(current)</span></a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="/devices/logs">Logs</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="/map">Map</a>
+                </li>
+                </ul>
+            </div>
+        </nav>
+
+        <h1 align="center">Server Alert</h1>
+        <div class="container">
+            <div class="acf-map">
+                <% devices.forEach(function(device) { %>
+                    <div class="marker" data-lat="<%= device.latitud %>" data-lng="<%= device.longitud %>">
+                        <h4><%= device.name %></h4>
+                        <% if (device.status) { %>
+                          <p>El dispositivo se encuentra ACTIVO</p>
+                        <% } else { %>
+                          <p>El dispositivo se ecuentra INACTIVO</p>
+                        <% }%>
+                    </div>   
+                <% }); %>
+            </div>
         </div>
-    </div>
 
-<script src='https://maps.googleapis.com/maps/api/js?key=AIzaSyDTW63QsiApZHgZ5XB1yLLZSBHiRcRN6c0'></script>
-<script type="text/javascript" src="/js/map.js"></script>
-
-<% include ../partials/footer %>
+        <script src='https://maps.googleapis.com/maps/api/js?key=AIzaSyDTW63QsiApZHgZ5XB1yLLZSBHiRcRN6c0'></script>
+        <script  src="/js/map.js"></script>
+    </body>
+</html>
