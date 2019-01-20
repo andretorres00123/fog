@@ -1,0 +1,19 @@
+<% include ../partials/header %>
+
+    <h1 align="center">Server Alert</h1>
+
+    <div class="container">
+        <div class="acf-map">
+            <% devices.forEach(function(device) { %>
+                <div class="marker" data-lat="<%= device.latitud %>" data-lng="<%= device.longitud %>">
+                    <h4><%= device.name %></h4>
+                    <p><%= device.status %></p>
+                </div>   
+            <% }); %>
+        </div>
+    </div>
+
+<script src='https://maps.googleapis.com/maps/api/js?key=AIzaSyDTW63QsiApZHgZ5XB1yLLZSBHiRcRN6c0'></script>
+<script type="text/javascript" src="/js/map.js"></script>
+
+<% include ../partials/footer %>

@@ -141,6 +141,17 @@ app.get('/', function(req, res) {
   });
 });
 
+//SHOW -ALL TARGETS IN THE MAPs
+app.get('/map', function(req, res){
+  Device.find({}, function(err, allDevices){
+    if (err) {
+      console.log(err);
+    } else {
+      res.render('map/index', {devices: allDevices});
+    }
+  });
+});
+
 //SHOW- Muestra todos los dispositivos
 app.get('/devices', function(req, res) {
   Device.find({}, function(err, allDevices) {
