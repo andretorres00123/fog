@@ -2,6 +2,7 @@ var express = require('express'),
   bodyParser = require('body-parser'),
   mongoose = require('mongoose'),
   app = express(),
+  methodOverride = require('method-override'),
   Device = require('./models/device'),
   Log = require('./models/log'),
   ping = require('net-ping');
@@ -9,6 +10,7 @@ var express = require('express'),
 const port = 3502;
 var session = ping.createSession();
 var bandera = true;
+var intervalsList = [];
 
 mongoose.connect(
   'mongodb://localhost/net_app_v1',
@@ -17,6 +19,7 @@ mongoose.connect(
 app.use(bodyParser.urlencoded({ extended: true }));
 app.set('view engine', 'ejs');
 app.use(express.static(__dirname + '/public'));
+app.use(methodOverride("_method"));
 
 function doingPing(ipAddress, id) {
   //Se colo la direccion IP a la que se quiere hacer ping
@@ -126,13 +129,16 @@ app.get('/', function(req, res) {
   Device.find({}, function(err, allDevices) {
     if(bandera) {
       allDevices.forEach(function(device) {
-        setInterval(doingPing, 3000, device.ipAddress ,device.id);
+        intervalsList.push({
+          'id': device.id,
+          'idInterval': setInterval(doingPing, 3000, device.ipAddress ,device.id)
+        });
       });
       bandera = false;
     }
-    allDevices.forEach(function(device) {
-      setInterval(doingPing, 3000, device.ipAddress ,device.id);
-    });
+    // allDevices.forEach(function(device) {
+    //   setInterval(doingPing, 3000, device.ipAddress ,device.id);
+    // });
     if (err) {
       console.log(err);
     } else {
@@ -157,7 +163,10 @@ app.get('/devices', function(req, res) {
   Device.find({}, function(err, allDevices) {
     if(bandera) {
       allDevices.forEach(function(device) {
-        setInterval(doingPing, 3000, device.ipAddress ,device.id);
+        intervalsList.push({
+          'id': device.id,
+          'idInterval': setInterval(doingPing, 3000, device.ipAddress ,device.id)
+        });
       });
       bandera = false;
     }
@@ -180,6 +189,40 @@ app.get('/devices/logs', function(req, res) {
   });
 });
 
+//Abre la forma para agregar un nuevo dispositivo
+app.get('/devices/new', function(req, res) {
+  res.render('devices/new');
+});
+
+//SHOW - muestra detalle del dispositivo
+app.get('/devices/:id', function(req, res){
+  Device.findById(req.params.id, function(err, foundDevice) {
+    if (err) {
+      console.log("error en el detalle");
+    } else {
+      console.log(foundDevice);
+      res.render('devices/show', {device: foundDevice});
+    }
+  });
+});
+
+//DELETE - eliminar un dispositivo
+app.delete('/devices/:id', function(req, res) {
+  var eliminado = intervalsList.find(function(elem) {
+    return elem.id == req.params.id;
+  });
+  console.log(eliminado);
+  clearInterval(eliminado.idInterval);
+  Device.findOneAndRemove(req.params.id, function(err) {
+    if (err) {
+      res.redirect('/devices');
+    } else {
+      res.redirect('/devices');
+    }
+
+  })
+});
+
 //Ruta para crear y guardar los dispositivos en la DB
 app.post('/devices', function(req, res) {
   var newDevice = {
@@ -194,19 +237,18 @@ app.post('/devices', function(req, res) {
   //Guardar en la base de datos
   Device.create(newDevice, function(err, newlyCreated) {
     if (err) {
-      console.log(err);
+      console.log("err en el create");
     } else {
       console.log(newlyCreated);
-      setInterval(doingPing, 3000, newlyCreated.ipAddress ,newlyCreated.id);
+      intervalsList.push({
+        'id': newlyCreated.id,
+        'idInterval': setInterval(doingPing, 3000, newlyCreated.ipAddress ,newlyCreated.id)
+      });
       res.redirect('/devices');
     }
   });
 });
 
-//Abre la forma para agregar un nuevo dispositivo
-app.get('/devices/new', function(req, res) {
-  res.render('devices/new');
-});
 
 // Device.remove({}, function(err) {
 //   if (err) {
