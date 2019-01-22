@@ -61,4 +61,26 @@ body {
   .acf-map img {
     max-width: inherit !important;
   }
+
+  .led-red {
+    float: left;
+    margin: 20px auto;
+    width: 25px;
+    height: 25px;
+    background-color: rgb(255, 0, 0);
+    border-radius: 50%;
+    box-shadow: #000 0 -1px 7px 1px, inset #600 0 -1px 9px, #F00 0 2px 12px;
+  }
+
+  .led-green {
+    float: left;
+    margin: 20px auto;
+    width: 25px;
+    height: 25px;
+    background-color: rgb(0, 255, 55);
+    border-radius: 50%;
+    box-shadow: #000 0 -1px 7px 1px, inset #460 0 -1px 9px, #7D0 0 2px 12px;
+  }
+
+
   

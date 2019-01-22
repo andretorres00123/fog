@@ -1,6 +1,3 @@
-var allDevices = [];
-
-
 function doingPing() {
 	$.ajax({
 		type: 'GET',

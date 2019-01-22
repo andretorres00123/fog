@@ -27,6 +27,9 @@ function doingPing(ipAddress, id) {
     if (error) {
         console.log(target + ': Not alive');
         Device.findById(id, function(err, foundDevice){
+          if (!foundDevice){
+            return null;
+          }
           if(foundDevice.status){
             var name = foundDevice.name;
             var ip = foundDevice.ipAddress;
@@ -69,59 +72,61 @@ function doingPing(ipAddress, id) {
                 });
               }
             });
-          }   
-        });
-    } else {
-      // console.log(mensaje++);
-      Device.findById(id, function(err, foundDevice){
-        if (!foundDevice.status){
-          var name = foundDevice.name;
-            var ip = foundDevice.ipAddress;
-            var latitud = foundDevice.latitud;
-            var longitud = foundDevice.longitud;
-            var status = true;
-            var nuevo = {
-              device: {
-                name: name,
-                ipAddress: ip,
-                latitud: latitud,
-                longitud: longitud,
-              },
-              status: status
-            };
-          Device.findByIdAndUpdate(id, nuevo, function(err, updatedDevice){
-            if(err){
-              console.log('Error', err);
-            } else {
-              var newLog = {
-                device: {
-                  id: updatedDevice.id,
-                  name: updatedDevice.name,
-                  ipAddress: updatedDevice.ipAddress,
-                  image: updatedDevice.image,
-                  latitud: updatedDevice.latitud,
-                  longitud: updatedDevice.longitud,
-                  status: true
-                },
-                updated: new Date(),
-              };
-              Log.create(newLog, function(err, newlyLog) {
-                if(err){
-                  console.log(err);
-                } else {
-                    //  redirect back to campgrounds page
-                    console.log(newlyLog);
-                    console.log(`El dispositivo ${target} se ha conectado`);
-                }
-              });
-            }
+            }     
           });
-        } else {
-          console.log(`Ping ${target}`);
-        }
-      });
-    }
-  });
+      } else {
+        Device.findById(id, function(err, foundDevice){
+          if (!foundDevice){
+            return null;
+          }
+          if (!foundDevice.status){
+            var name = foundDevice.name;
+              var ip = foundDevice.ipAddress;
+              var latitud = foundDevice.latitud;
+              var longitud = foundDevice.longitud;
+              var status = true;
+              var nuevo = {
+                device: {
+                  name: name,
+                  ipAddress: ip,
+                  latitud: latitud,
+                  longitud: longitud,
+                },
+                status: status
+              };
+            Device.findByIdAndUpdate(id, nuevo, function(err, updatedDevice){
+              if(err){
+                console.log('Error', err);
+              } else {
+                var newLog = {
+                  device: {
+                    id: updatedDevice.id,
+                    name: updatedDevice.name,
+                    ipAddress: updatedDevice.ipAddress,
+                    image: updatedDevice.image,
+                    latitud: updatedDevice.latitud,
+                    longitud: updatedDevice.longitud,
+                    status: true
+                  },
+                  updated: new Date(),
+                };
+                Log.create(newLog, function(err, newlyLog) {
+                  if(err){
+                    console.log(err);
+                  } else {
+                      //  redirect back to campgrounds page
+                      console.log(newlyLog);
+                      console.log(`El dispositivo ${target} se ha conectado`);
+                  }
+                });
+              }
+            });
+          } else {
+            console.log(`Ping ${target}`);
+          }
+        });
+      }
+    });
 };
 
 //INdex de toda la aplicacion
@@ -219,7 +224,7 @@ app.delete('/devices/:id', function(req, res) {
     } else {
       res.redirect('/devices');
     }
-
+    
   })
 });
 

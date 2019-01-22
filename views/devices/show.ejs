@@ -61,13 +61,11 @@
                     </p>
                     <p>Estado: 
                         <% if (device.status) { %>
-                            <span style="color: green">
-                                ACTIVO
-                            </span>
+                            <div id="<%= device.name %>" class="led-green">
+                            </div>
                         <% } else { %>
-                            <span style="color: red">
-                                INACTIVO
-                            </span>
+                            <div id="<%= device.name %>" class="led-red">
+                            </div>
                         <% } %>
                     </p>
                     <form action="/devices/<%= device._id %>?_method=DELETE" method="POST">
@@ -78,6 +76,6 @@
         </div>
 
         <script src='https://maps.googleapis.com/maps/api/js?key=AIzaSyDTW63QsiApZHgZ5XB1yLLZSBHiRcRN6c0'></script>
-        <script  src="/js/map.js"></script>
+        <script  src="/js/map1.js"></script>
     </body>
 </html>
