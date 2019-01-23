@@ -6,6 +6,7 @@ var express = require('express'),
   Device = require('./models/device'),
   Log = require('./models/log'),
   ping = require('net-ping');
+const nodemailer = require("nodemailer");
 
 const port = 3502;
 var session = ping.createSession();
@@ -20,6 +21,48 @@ app.use(bodyParser.urlencoded({ extended: true }));
 app.set('view engine', 'ejs');
 app.use(express.static(__dirname + '/public'));
 app.use(methodOverride("_method"));
+
+async function main(log, mensaje){
+
+  // Generate test SMTP service account from ethereal.email
+  // Only needed if you don't have a real mail account for testing
+  let account = await nodemailer.createTestAccount();
+
+  // create reusable transporter object using the default SMTP transport
+  let transporter = nodemailer.createTransport({
+    host: "smtp-mail.outlook.com",
+    port: 587,
+    secure: false, // true for 465, false for other ports
+    auth: {
+      user: '**********@hotmail.com', // generated ethereal user
+      pass: '***********' // generated ethereal password
+    }
+  });
+
+  // setup email data with unicode symbols
+  let mailOptions = {
+    from: 'torresandre06@hotmail.com', // sender address
+    to: "aectorres@udlanet.ec", // list of receivers
+    subject: `Log Device:  ${log.device.name}`, // Subject line
+    text: "Mijo te voy a dar de comer jajajjajajaja", // plain text body
+    html: `<h1>IP: ${log.device.ipAddress}</h1>
+            <h2>Mensaje: ${mensaje}</h2>
+            <h2>Nombre del Dispositivo: ${log.device.name}</h2>
+           <h2>Estado: ${log.device.status? 'Activo' : 'Inactivo'}</h2>
+           <h2>Latitud: ${log.device.latitud}</h2>
+           <h2>Longitud: ${log.device.longitud}</h2>` // html body
+  };
+
+  // send mail with defined transport object
+  let info = await transporter.sendMail(mailOptions)
+
+  console.log("Message sent: %s", info.messageId);
+  // Preview only available when sending through an Ethereal account
+  console.log("Preview URL: %s", nodemailer.getTestMessageUrl(info));
+
+  // Message sent: <b658f8ca-6296-ccf4-8306-87d57a0b4321@example.com>
+  // Preview URL: https://ethereal.email/message/WaQKMgKddxQDoou...
+}
 
 function doingPing(ipAddress, id) {
   //Se colo la direccion IP a la que se quiere hacer ping
@@ -65,6 +108,7 @@ function doingPing(ipAddress, id) {
                   if(err){
                     console.log(err);
                   } else {
+                      main(newLog, 'El dispositivo se ha desconectado').catch(console.error);
                       //  redirect back to campgrounds page
                       console.log(newlyLog);
                       console.log(`El dispositivo ${target} se ha desconectado`);
@@ -114,6 +158,7 @@ function doingPing(ipAddress, id) {
                   if(err){
                     console.log(err);
                   } else {
+                      main(newLog, 'El dispositivo se ha conectado').catch(console.error);
                       //  redirect back to campgrounds page
                       console.log(newlyLog);
                       console.log(`El dispositivo ${target} se ha conectado`);
