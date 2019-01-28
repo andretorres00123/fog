@@ -1,12 +1,15 @@
-var express = require('express'),
-  bodyParser = require('body-parser'),
-  mongoose = require('mongoose'),
-  app = express(),
-  methodOverride = require('method-override'),
-  Device = require('./models/device'),
-  Log = require('./models/log'),
-  ping = require('net-ping');
-const nodemailer = require("nodemailer");
+var express       = require('express'),
+  bodyParser      = require('body-parser'),
+  mongoose        = require('mongoose'),
+  app             = express(),
+  methodOverride  = require('method-override'),
+  Device          = require('./models/device'),
+  passport        = require('passport'),
+  LocalStrategy   = require('passport-local'),
+  User            = require('./models/user'),
+  Log             = require('./models/log'),
+  ping            = require('net-ping');
+const nodemailer  = require("nodemailer");
 
 const port = 3502;
 var session = ping.createSession();
@@ -22,6 +25,23 @@ app.set('view engine', 'ejs');
 app.use(express.static(__dirname + '/public'));
 app.use(methodOverride("_method"));
 
+//Passport configuration
+app.use(require('express-session')({
+  secret: 'Computacion en la niebla',
+  resave: false,
+  saveUninitialized: false
+}));
+app.use(passport.initialize());
+app.use(passport.session());
+passport.use(new LocalStrategy(User.authenticate()));
+passport.serializeUser(User.serializeUser());
+passport.deserializeUser(User.deserializeUser());
+
+app.use(function(req, res, next) {
+  res.locals.currentUser = req.user;
+  next();
+});
+
 async function main(log, mensaje){
 
   // Generate test SMTP service account from ethereal.email
@@ -34,8 +54,8 @@ async function main(log, mensaje){
     port: 587,
     secure: false, // true for 465, false for other ports
     auth: {
-      user: '**********@hotmail.com', // generated ethereal user
-      pass: '***********' // generated ethereal password
+      user: 'torresandre06@hotmail.com', // generated ethereal user
+      pass: 'Ci1721933974' // generated ethereal password
     }
   });
 
@@ -198,7 +218,7 @@ app.get('/', function(req, res) {
 });
 
 //SHOW -ALL TARGETS IN THE MAPs
-app.get('/map', function(req, res){
+app.get('/map', isLoggedIn, function(req, res){
   Device.find({}, function(err, allDevices){
     if (err) {
       console.log(err);
@@ -223,13 +243,13 @@ app.get('/devices', function(req, res) {
     if (err) {
       console.log(err);
     } else {
-      res.render('devices/index', { devices: allDevices });
+      res.render('devices/index', { devices: allDevices, currentUser: req.user});
     }
   });
 });
 
 //Muestra los LOGs de los dispositivos
-app.get('/devices/logs', function(req, res) {
+app.get('/devices/logs', isLoggedIn, function(req, res) {
   Log.find({}, function(err, allLogs){
     if (err) {
       console.log(err);
@@ -240,12 +260,12 @@ app.get('/devices/logs', function(req, res) {
 });
 
 //Abre la forma para agregar un nuevo dispositivo
-app.get('/devices/new', function(req, res) {
+app.get('/devices/new', isLoggedIn, function(req, res) {
   res.render('devices/new');
 });
 
 //SHOW - muestra detalle del dispositivo
-app.get('/devices/:id', function(req, res){
+app.get('/devices/:id', isLoggedIn, function(req, res){
   Device.findById(req.params.id, function(err, foundDevice) {
     if (err) {
       console.log("error en el detalle");
@@ -328,6 +348,55 @@ app.get('/status', function(req, res) {
     res.json(devices);
   });
 });
+
+//  ========================
+//  AUTH ROUTES
+// ======================
+
+//  show register f
+app.get('/register', function(req, res) {
+  res.render('register');
+});
+//handle sign up logic
+app.post('/register', function(req, res) {
+  var newUser = new User({username: req.body.username});
+  User.register(newUser, req.body.password, function(err, user) {
+    if(err){
+      console.log(err);
+      return res.render("register");
+    }
+    passport.authenticate('local')(req, res, function() {
+      res.redirect('/devices');
+    });
+  });
+});
+
+//   show login form
+app.get('/login', function(req, res) {
+  res.render('login');
+});
+//  handling login logic
+app.post('/login', passport.authenticate("local",
+  {
+    successRedirect: "/devices",
+    failureRedirect: "/login"
+  }), function(req, res) {
+  
+});
+
+// logic route
+app.get('/logout', function(req, res) {
+  req.logOut();
+  res.redirect('/devices');
+});
+
+function isLoggedIn(req, res, next) {
+  if(req.isAuthenticated()) {
+    return next();
+  }
+  res.redirect('/login');
+};
+
 
 app.listen(port, function(err) {
   if (err) {
