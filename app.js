@@ -54,8 +54,8 @@ async function main(log, mensaje){
     port: 587,
     secure: false, // true for 465, false for other ports
     auth: {
-      user: 'torresandre06@hotmail.com', // generated ethereal user
-      pass: 'Ci1721933974' // generated ethereal password
+      user: 'caperucita@hotmail.com', // generated ethereal user
+      pass: '************' // generated ethereal password
     }
   });
 
